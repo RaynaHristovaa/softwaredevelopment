@@ -1,151 +1,126 @@
-﻿namespace rabota_v_klass
+﻿using System.Threading.Tasks;
+
+namespace rabota_v_klass
 {
     internal class Program
     {
-        static string filePath = "zadaci.txt";
-       static List<zadacha> tasks= new List<zadacha>();
-        private static int nextId = 1;
-
+       // static TodoService service= new TodoService(TodoStorage);
         static void Main(string[] args)
         {
-
-
+            TodoService service = new TodoService(storage);
+            TodoStorage storage = new TodoStorage();
+            
             while (true)
             {
-                Console.WriteLine("1.Добави нова задача ");
-                Console.WriteLine("2.Вижда всички въеедени задачи");
-                Console.WriteLine("3. Маркира задачата като изпълнена ");
-                Console.WriteLine("4. Изтрива задачата");
-                Console.WriteLine("5. Прекратява работата на програмата");
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine("======= TODO MANAGER ========");
+                Console.WriteLine("1. Добави задача");
+                Console.WriteLine("2. Покажи задачи");
+                Console.WriteLine("3. Маркирай задача като изпълнена");
+                Console.WriteLine("4. Изтрий задача");
+                Console.WriteLine("x. Изход");
+
+                Console.WriteLine();
+                Console.Write("Избор: ");
                 string choice = Console.ReadLine();
-
-
-
-
-
-
-                static void SaveZadachiToFile()
+                try
                 {
-
-                    List<string> lines = new List<string>();
-                    for (int i = 0; i < tasks.Count; i++)
+                    switch (choice)
                     {
-
-
-
-                        lines.Add(tasks[i].ToFileFormat());
-                    }
-                    File.WriteAllLines(filePath, lines);
-
-
-
-
-
-                }
-                static void LoadZadachiFromFile()
-                {
-                    if (!File.Exists(filePath))
-                    {
-                        File.Create(filePath).Close();
-                        return;
-                    }
-
-
-
-                    string[] lines = File.ReadAllLines(filePath);
-                    for (int i = 0; i < lines.Length; i++)
-                    {
-                        if (string.IsNullOrEmpty(lines[i])) continue;
-                        string[] parts = lines[i].Split(',');
-                        if (parts.Length == 6)
-                        {
-                            string tittle = parts[0];
-                            string description = parts[1];
-                            string deadline = parts[2];
-
-
-                            zadacha z = new zadacha(nextId, tittle, description,DateTime.Parse( deadline));
-                            tasks.Add(z);
-                        }
-
+                        case "1": { AddTodo(service); break; }
+                        case "2": { ListAllTodos(service); break; }
+                        case "3": { CompleteTodo(service); break; }
+                        case "4": { DeleteTodo(service); break; }
+                        case "x": { Console.WriteLine("Край на програмата"); Console.ReadLine(); return; }
+                        default: { Console.WriteLine("Невалиден избор."); break; }
                     }
                 }
-
-                switch (choice)
+                catch (ArgumentOutOfRangeException ex)
                 {
-
-                    case "1":
-
-                        Console.WriteLine("Въведи заглавие");
-                        string title = Console.ReadLine();
-
-                        Console.WriteLine(" Въведи описание ");
-                        string description = Console.ReadLine();
-
-                        Console.WriteLine("Въведи краен срок");
-                        string deadline = Console.ReadLine();
-
-
-                        Console.WriteLine(" Задачата е въведена  успешно");
-                        break;
-
-                    case "2":
-
-                        Console.WriteLine("Списък със задачи");
-                        if (tasks.Count == 0)
-                        {
-                            Console.WriteLine("Списъкът е празен");
-
-                        }
-                        else
-                        {
-                            foreach (zadacha z in tasks)
-                            {
-                                Console.WriteLine(z.title);
-                            }
-                        }
-                        break;
-
-                    case "3":
-
-                        Console.WriteLine("Коя задача е маркирана правилно ");
-                        string taskName = Console.ReadLine();
-                        foreach (zadacha z in tasks)
-                        {
-                            if (z.title == taskName)
-                            {
-                                z.isdone = true;
-                                Console.WriteLine("Маркирана е като правилна");
-                            }
-
-
-
-                        }
-                        break;
-
-                    case "4":
-                        Console.WriteLine("Въведи заглавие на задачата за изтриване ");
-                        string taskRemove = Console.ReadLine();
-                        tasks.RemoveAll(z => z.title == taskRemove);
-                        Console.WriteLine("Задачата е изтрита");
-                        break;
-
-
-                    case "5":
-                        break;
+                    Console.WriteLine(ex.Message);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Console.WriteLine(ex.Message);
 
                 }
-
-
-
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                Console.ReadLine();
             }
+        }
+
+        private static void DeleteTodo(TodoService service)
+        {
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("=====  Изтрий задача =======\n");
+            ListAllTodos(service);
+
+            Console.Write("Избери Id: ");
+            int id;
+            while (!int.TryParse(Console.ReadLine(), out id))
+            {
+                Console.WriteLine("Невалидно id.");
+                Console.Write("Избери Id: ");
+            }
+
+            service.Delete(id);
+            Console.WriteLine("Задачата е изтрита.");
+
+        }
+
+        private static void CompleteTodo(TodoService service)
+        {
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("=====  Маркирай задача като завършена =======\n");
+            ListAllTodos(service);
+
+            Console.Write("Избери Id: ");
+            int id;
+            while (!int.TryParse(Console.ReadLine(), out id))
+            {
+                Console.WriteLine("Невалидно id.");
+                Console.Write("Избери Id: ");
+            }
+
+           service.Complete(id);
+            Console.WriteLine("Задачата е завършена.");
 
 
         }
-           private static void AddTodo()
+
+        private static void ListAllTodos( TodoService service)
         {
             Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("===== Всички задачи  =======");
+            var todos = service.GetAll();
+            if (todos.Count == 0)
+            {
+                Console.WriteLine("Няма въведени задачи");
+            }
+            else
+            {
+                foreach (TodoItem todoItem in todos)
+                {
+                    Console.WriteLine($"{todoItem}");
+                }
+            }
+        }
+
+       
+
+        private static void AddTodo(TodoService service)
+        {
+            Console.Clear();
+            Console.WriteLine();
             Console.WriteLine("=====  Добавяне на задача =======");
+
             Console.Write("Заглавие:");
             string title = Console.ReadLine();
 
@@ -153,14 +128,17 @@
             string description = Console.ReadLine();
 
             Console.Write("Краен срок:");
-            DateTime deadline = DateTime.Parse(Console.ReadLine());
+            DateTime dueDate;
+            while (!DateTime.TryParse(Console.ReadLine(), out dueDate))
+            {
+                Console.WriteLine("Невалидна дата.Въведи отово!");
+                Console.Write("Краен срок: ");
+            }
 
-            zadacha todoItem = new zadacha(nextId, title, description, deadline);
-
-            tasks.Add(todoItem);
-            nextId++;
+            service.Add(title, description, dueDate);
             Console.WriteLine("Задачата е добавена.");
+
         }
     }
-    }
 
+}

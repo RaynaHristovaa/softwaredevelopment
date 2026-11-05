@@ -1,0 +1,67 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace rabota_v_klass
+{
+    internal class TodoService
+    {
+
+        private readonly TodoStorage storage;
+        public TodoService(TodoStorage storage)
+        {
+            this.storage = storage;
+        }
+    
+        public IReadOnlyList<TodoItem>GetAll()
+        {
+            return storage.Todos;
+        }
+        public void Add(string title, string description, DateTime dueDate)
+        {
+            TodoItem todoItem = new TodoItem(storage.NextId, title, description, dueDate);
+            storage.Todos.Add(todoItem);
+            storage.NextId++;
+        }
+
+        public TodoItem FindById(int id)
+        {
+            foreach (TodoItem todo in storage.Todos)
+            {
+                if (todo.Id == id)
+                {
+                    return todo;
+                }
+            }
+
+            return null;
+        }
+
+        public void Complete(int id)
+        {
+            TodoItem todo = FindById(id);
+
+            if (todo == null)
+                throw new ArgumentException("Няма задача с такова ID");
+
+            todo.Completed();
+        }
+
+        public void Delete(int id)
+        {
+            TodoItem todo = FindById(id);
+
+            if (todo == null)
+                throw new ArgumentException("Няма задача с такова ID");
+
+            storage.Todos.Remove(todo);
+
+        }
+
+
+
+
+    }
+}
