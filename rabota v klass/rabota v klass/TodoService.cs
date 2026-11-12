@@ -10,9 +10,11 @@ namespace rabota_v_klass
     {
 
         private readonly TodoStorage storage;
-        public TodoService(TodoStorage storage)
+        public readonly FileStorage fileStorage;
+        public TodoService(FileStorage file)
         {
-            this.storage = storage;
+            fileStorage=file;
+            this.storage = fileStorage.Load();
         }
     
         public IReadOnlyList<TodoItem>GetAll()
@@ -24,6 +26,7 @@ namespace rabota_v_klass
             TodoItem todoItem = new TodoItem(storage.NextId, title, description, dueDate);
             storage.Todos.Add(todoItem);
             storage.NextId++;
+            fileStorage.Save(storage);
         }
 
         public TodoItem FindById(int id)
@@ -47,6 +50,7 @@ namespace rabota_v_klass
                 throw new ArgumentException("Няма задача с такова ID");
 
             todo.Completed();
+            fileStorage.Save(storage);
         }
 
         public void Delete(int id)
@@ -57,7 +61,7 @@ namespace rabota_v_klass
                 throw new ArgumentException("Няма задача с такова ID");
 
             storage.Todos.Remove(todo);
-
+            fileStorage.Save(storage);
         }
 
 

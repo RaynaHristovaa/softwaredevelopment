@@ -7,9 +7,9 @@ namespace rabota_v_klass
        // static TodoService service= new TodoService(TodoStorage);
         static void Main(string[] args)
         {
-            TodoService service = new TodoService(storage);
-            TodoStorage storage = new TodoStorage();
-            
+            FileStorage fileStorage = new FileStorage("todos.json");
+            TodoService service = new TodoService(fileStorage);
+           
             while (true)
             {
                 Console.Clear();

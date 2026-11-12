@@ -9,7 +9,7 @@ namespace rabota_v_klass
     internal class TodoStorage
     {
         public List<TodoItem> Todos { get; set; }
-        public int NextId { get; set; }
+        public int NextId { get; set; } = 1;
         
     }
 }
